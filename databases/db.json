@@ -1,0 +1,223 @@
+{
+    "users": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "not_null": true,
+                "unique": true
+            },
+            "name": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "age": {
+                "type": "INT",
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "data": [
+            {
+                "id": 1,
+                "name": "Yusuf",
+                "age": 19
+            },
+            {
+                "id": 2,
+                "name": "Dima",
+                "age": 20
+            },
+            {
+                "id": 3,
+                "name": "Anna",
+                "age": 22
+            },
+            {
+                "id": 4,
+                "name": "Omar",
+                "age": 18
+            },
+            {
+                "id": 5,
+                "name": "Liam",
+                "age": 25
+            },
+            {
+                "id": 6,
+                "name": "Sophie",
+                "age": 24
+            },
+            {
+                "id": 7,
+                "name": "Lucas",
+                "age": 21
+            },
+            {
+                "id": 8,
+                "name": "Maria",
+                "age": 23
+            },
+            {
+                "id": 9,
+                "name": "Ethan",
+                "age": 26
+            },
+            {
+                "id": 10,
+                "name": "Elisabeth",
+                "age": 20
+            },
+            {
+                "id": 11,
+                "name": "Zara",
+                "age": 27
+            },
+            {
+                "id": 12,
+                "name": "Ahmed",
+                "age": 22
+            },
+            {
+                "id": 13,
+                "name": "Nina",
+                "age": 30
+            },
+            {
+                "id": 14,
+                "name": "Jack",
+                "age": 28
+            },
+            {
+                "id": 15,
+                "name": "Ella",
+                "age": 24
+            },
+            {
+                "id": 16,
+                "name": "Tom",
+                "age": 31
+            },
+            {
+                "id": 17,
+                "name": "Sophia",
+                "age": 19
+            },
+            {
+                "id": 18,
+                "name": "Mikhail",
+                "age": 33
+            },
+            {
+                "id": 19,
+                "name": "Lila",
+                "age": 23
+            },
+            {
+                "id": 20,
+                "name": "Artem",
+                "age": 35
+            },
+            {
+                "id": 21,
+                "name": "Grace",
+                "age": 32
+            },
+            {
+                "id": 22,
+                "name": "Leo",
+                "age": 29
+            },
+            {
+                "id": 23,
+                "name": "Alya",
+                "age": 27
+            },
+            {
+                "id": 24,
+                "name": "Max",
+                "age": 22
+            },
+            {
+                "id": 25,
+                "name": "Eva",
+                "age": 26
+            },
+            {
+                "id": 26,
+                "name": "Igor",
+                "age": 34
+            },
+            {
+                "id": 27,
+                "name": "Noah",
+                "age": 20
+            },
+            {
+                "id": 28,
+                "name": "Luna",
+                "age": 25
+            },
+            {
+                "id": 29,
+                "name": "Isabella",
+                "age": 23
+            },
+            {
+                "id": 30,
+                "name": "Daniel",
+                "age": 18
+            }
+        ]
+    },
+    "users2": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "not_null": true,
+                "unique": true
+            },
+            "name": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "age": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "date": {
+                "type": "DATE",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "data": [
+            {
+                "id": 1,
+                "name": "Yusuf",
+                "age": 19
+            },
+            {
+                "id": 2,
+                "name": "Veronica",
+                "age": 33
+            },
+            {
+                "name": "Dima",
+                "age": 44,
+                "id": 3
+            }
+        ]
+    }
+}
