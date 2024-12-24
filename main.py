@@ -26,13 +26,13 @@ def main():
 
     def multiline_command():
         cmd = input(">>> ")
-        while not cmd.endswith(";"):
+        while not cmd.endswith(";") and cmd != "exit":
             cmd += f" {input('... ')}"
         return cmd
 
     while True:
-        command = multiline_command()
-        if command == "exit;":
+        command = multiline_command().strip()
+        if command == "exit":
             break
         elif command.startswith("INSERT INTO "):
             print(db.insert_into.insert_into(command))

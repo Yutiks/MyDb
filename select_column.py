@@ -91,6 +91,49 @@ class SelectColumn:
         raise ValueError(f"Error: '{condition}'")
 
     @staticmethod
+    def apply_aggregation(grouped_data, columns):
+        result = []
+        for group_key, rows in grouped_data.items():
+            aggregated_row = {}
+            for column in columns:
+                if column.startswith("SUM(") and column.endswith(")"):
+                    col_name = column[4:-1]
+                    aggregated_row[column] = sum(row[col_name] for row in rows)
+                elif column.startswith("COUNT(") and column.endswith(")"):
+                    col_name = column[6:-1]
+                    if col_name == "*":
+                        aggregated_row[column] = len(rows)
+                elif column.startswith("AVG(") and column.endswith(")"):
+                    col_name = column[4:-1]
+                    aggregated_row[column] = sum(row[col_name] for row in rows) / len(rows)
+                elif column.startswith("MAX(") and column.endswith(")"):
+                    col_name = column[4:-1]
+                    aggregated_row[column] = max(row[col_name] for row in rows)
+                elif column.startswith("MIN(") and column.endswith(")"):
+                    col_name = column[4:-1]
+                    aggregated_row[column] = min(row[col_name] for row in rows)
+                else:
+                    aggregated_row[column] = rows[0][column]
+            result.append(aggregated_row)
+        return result
+
+    def group_by(self, table_data, group_by_columns, columns):
+        grouped_data = {}
+        for row in table_data:
+            group_key = tuple(row[column] for column in group_by_columns)
+            if group_key not in grouped_data:
+                grouped_data[group_key] = []
+            grouped_data[group_key].append(row)
+        return self.apply_aggregation(grouped_data, columns)
+
+    def having_conditions(self, data, having_part):
+        conditions = self.split_by_and(having_part)
+        for cond in conditions:
+            func = self.check_condition(cond)
+            data = [row for row in data if func(row)]
+        return data
+
+    @staticmethod
     def split_by_and(where_part):
         parts = []
         section = []
@@ -125,6 +168,8 @@ class SelectColumn:
 
     def select_column(self, command):
         where_part = None
+        group_by_columns = None
+        having_part = None
         if "SELECT" not in command or "FROM" not in command:
             return "Error: Invalid query."
         command = command[len("SELECT "):].strip().rstrip(";")
@@ -139,6 +184,12 @@ class SelectColumn:
 
         columns_part, from_part = command.split(" FROM ", 1)
 
+        if " GROUP BY " in from_part:
+            from_part, group_by_columns = from_part.split(" GROUP BY ", 1)
+            if " HAVING " in group_by_columns:
+                group_by_columns, having_part = group_by_columns.split(" HAVING ")
+            group_by_columns = group_by_columns.strip().split(", ")
+
         if " WHERE " in from_part:
             table_name, where_part = from_part.split(" WHERE ", 1)
         else:
@@ -151,14 +202,20 @@ class SelectColumn:
         table_data = self.tables[table_name]["data"]
         table_columns = self.tables[table_name]["columns"]
 
-        columns = columns_part.split(", ") if "*" not in columns_part else table_columns
+        columns = columns_part.split(", ") if " * " not in columns_part and columns_part != "*" else list(table_columns.keys())
+        if group_by_columns:
+            for group_by_column in group_by_columns:
+                if group_by_column not in table_columns:
+                    return f"Error: Column '{group_by_column}' not found."
+            table_data = self.group_by(table_data, group_by_columns, columns)
+
+        if having_part:
+            table_data = self.having_conditions(table_data, having_part)
 
         if order_by_column and order_by_column not in table_columns:
             return f"Error: Column '{order_by_column}' not found."
         if where_part:
             table_data = self.where_conditions(where_part, table_data)
-
         if order_by_column:
             table_data.sort(key=lambda x: x[order_by_column], reverse=order_desc)
-
         return [{col: row[col] for col in columns if col in row} for row in table_data]
