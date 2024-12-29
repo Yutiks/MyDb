@@ -1,13 +1,17 @@
-import create_table
-import insert_into
-import select_column
+from create_table import CreateTable
+from delete import Delete
+from insert_into import InsertInto
+from select_column import SelectColumn
+from update import Update
 
 
 class MyDB:
     def __init__(self):
-        self.create_table = create_table.CreateTable(self.validate_date)
-        self.insert_into = insert_into.InsertInto(self.validate_date)
-        self.select_column = select_column.SelectColumn()
+        self.create_table = CreateTable(self.validate_date)
+        self.insert_into = InsertInto(self.validate_date)
+        self.select_column = SelectColumn()
+        self.delete = Delete()
+        self.update = Update()
 
     @staticmethod
     def validate_date(date_str):
@@ -38,6 +42,10 @@ def main():
             print(db.insert_into.insert_into(command))
         elif command.startswith("CREATE TABLE "):
             print(db.create_table.create_table(command))
+        elif command.startswith("DELETE FROM "):
+            print(db.delete.delete_from(command))
+        elif command.startswith("UPDATE "):
+            print(db.update.update(command))
         elif command.startswith("SELECT "):
             result = db.select_column.select_column(command)
             if isinstance(result, str):

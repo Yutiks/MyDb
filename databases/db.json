@@ -170,11 +170,6 @@
                 "id": 30,
                 "name": "Daniel",
                 "age": 18
-            },
-            {
-                "id": 31,
-                "name": "Yusuf",
-                "age": 19
             }
         ]
     },
@@ -209,19 +204,9 @@
         },
         "data": [
             {
-                "id": 1,
-                "name": "Yusuf",
-                "age": 19
-            },
-            {
                 "id": 2,
-                "name": "Veronica",
-                "age": 33
-            },
-            {
-                "name": "Dima",
-                "age": 44,
-                "id": 3
+                "name": "Veronika",
+                "age": 27
             }
         ]
     }
