@@ -20,10 +20,25 @@ class CreateTable:
             return None
         column_name = column_parts[0]
         column_type = column_parts[1]
-        not_null = "NOT NULL" in column_parts
-        unique = "UNIQUE" in column_parts
+        not_null = "NOT NULL" in column
+        unique = "UNIQUE" in column
+        is_primary_key = "PRIMARY KEY" in column
+        is_foreign_key = "FOREIGN KEY" in column
+        references_table = None
+        references_column = None
+
+        if is_foreign_key and "REFERENCES" in column:
+            try:
+                ref_idx = column_parts.index("REFERENCES") + 1
+                references_table, references_column = column_parts[ref_idx].split("(")
+                references_column = references_column.rstrip(")")
+            except (IndexError, ValueError):
+                return f"Error: Invalid FOREIGN KEY format in column '{column_name}'."
         default_value = self.parse_default_value(column_parts, column_name, column_type)
-        return column_name, column_type, not_null, unique, default_value
+        return (
+            column_name, column_type, not_null, unique,
+            is_primary_key, is_foreign_key, references_table, references_column, default_value
+        )
 
     def parse_default_value(self, column_parts, column_name, column_type):
         if "DEFAULT" not in column_parts:
@@ -74,13 +89,18 @@ class CreateTable:
         columns = columns[:-2].split(", ")
         if not columns or not table_name:
             return "Error: Invalid command format."
-
-        table_columns = {"id": {"type": "INT", "not_null": True, "unique": True}}
+        table_columns = {}
+        primary_keys = []
+        foreign_keys = []
         for column in columns:
-            column_name, column_type, not_null, unique, default_value = self.parse_column(column)
+            (
+                column_name, column_type, not_null, unique,
+                is_primary_key, is_foreign_key, references_table, references_column, default_value
+            ) = self.parse_column(column)
             column_type_validation = self.validate_column_type(column_name, column_type)
-            if isinstance(column_type_validation, str):
-                return column_type_validation
+
+            if isinstance(self.parse_column(column), str):
+                return self.parse_column(column)
 
             table_columns[column_name] = {
                 "type": column_type_validation["type"],
@@ -89,11 +109,26 @@ class CreateTable:
                 "unique": unique,
                 "default": default_value,
             }
+            if is_primary_key:
+                primary_keys.append(column_name)
+            if is_foreign_key:
+                foreign_keys.append({
+                    "column": column_name,
+                    "references_table": references_table,
+                    "references_column": references_column,
+                })
 
+        if not primary_keys:
+            return "Error: No PRIMARY KEY specified."
         if table_name in self.tables:
             return f"Error: Table '{table_name}' already exists."
 
-        self.tables[table_name] = {"columns": table_columns, "data": []}
+        self.tables[table_name] = {
+            "columns": table_columns,
+            "primary_keys": primary_keys,
+            "foreign_keys": foreign_keys,
+            "data": []
+        }
         with open(self.filename, "w", encoding="utf-8") as file:
             json.dump(self.tables, file, indent=4, ensure_ascii=False)
         return f"Table '{table_name}' created successfully."

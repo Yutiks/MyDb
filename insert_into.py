@@ -20,7 +20,7 @@ class InsertInto:
     def parse_command(command):
         if "VALUES" not in command:
             return "Invalid command format."
-
+        command = command.rstrip(";")
         table_part, values_part = command.split(" VALUES ")
         table_name = table_part.split()[0]
 
@@ -28,8 +28,7 @@ class InsertInto:
         if "(" in table_part:
             columns_part = table_part.split(" (", 1)[1].split(")")[0]
             columns = [col.strip() for col in columns_part.split(",")]
-        values_rows = values_part.strip().rstrip(");").split("), (")
-
+        values_rows = values_part.split("), (")
         return table_name, columns, values_rows
 
     @staticmethod
@@ -94,6 +93,8 @@ class InsertInto:
         if table_name not in self.tables:
             return f"Table '{table_name}' does not exist."
         table_columns = self.tables[table_name]["columns"]
+        primary_keys = self.tables[table_name]["primary_keys"]
+
         columns = self.prepare_columns(table_columns, specified_columns)
         if isinstance(columns, str):
             return columns
@@ -103,6 +104,9 @@ class InsertInto:
             row_values = [value.strip() for value in row_values.strip("()").split(", ")]
             new_row = self.prepare_row(table_columns, columns, row_values)
             new_row["id"] = len(self.current_table_data) + 1
+            for existing_row in self.current_table_data:
+                if all(existing_row[key] == new_row.get(key) for key in primary_keys):
+                    return f"Duplicate primary key found: {', '.join(f'{key}={new_row.get(key)}' for key in primary_keys)}."
             self.current_table_data.append(new_row)
 
         self.save_tables()
