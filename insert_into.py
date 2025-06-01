@@ -2,8 +2,8 @@ import json
 
 
 class InsertInto:
-    def __init__(self, validate_date):
-        self.filename = "databases/db.json"
+    def __init__(self, validate_date, filename="databases/db.json"):
+        self.filename = filename
         self.validate_date = validate_date
         self.tables = self.load_tables()
         self.current_table_data = []

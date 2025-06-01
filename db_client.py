@@ -1,0 +1,49 @@
+import socket
+from messaging_protocol import sendtext, recieve
+from main import MyDB
+
+HOST = '127.0.0.1'
+PORT = 5089
+
+
+def main():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((HOST, PORT))
+    print("[CLIENT] Connected to DB server.")
+
+    msg = recieve(sock)
+    if not msg or msg[1] != "REQUEST_USERNAME":
+        sock.close()
+        return
+
+    username = input("Enter your name: ").strip()
+    sendtext(sock, username)
+
+    msg = recieve(sock)
+    if not msg:
+        sock.close()
+        return
+
+    user_id = msg[1].strip()
+    print(f"[CLIENT] Your user ID is {user_id}")
+
+    db_path = f"databases/db_{user_id}.json"
+    db = MyDB(db_path)
+
+    while True:
+        query = db.multiline_command().strip()
+        if query == "exit":
+            sendtext(sock, "exit")
+            break
+        sendtext(sock, query)
+        msg = recieve(sock)
+        if msg[0] == "TXT":
+            print("Response:")
+            print(msg[1])
+        else:
+            print("[CLIENT] Unexpected response type:", msg[0])
+    sock.close()
+    print("[CLIENT] Disconnected.")
+
+
+main()

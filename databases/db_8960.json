@@ -1,0 +1,41 @@
+{
+    "users": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "name": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": true,
+                "unique": false,
+                "default": null
+            },
+            "age": {
+                "type": "INT",
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [],
+        "data": [
+            {
+                "name": "Yusuf",
+                "age": 17,
+                "id": 1
+            },
+            {
+                "name": "Veronica",
+                "age": 18,
+                "id": 2
+            }
+        ]
+    }
+}

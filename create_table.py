@@ -2,8 +2,8 @@ import json
 
 
 class CreateTable:
-    def __init__(self, validate_date):
-        self.filename = "databases/db.json"
+    def __init__(self, validate_date, filename="databases/db.json"):
+        self.filename = filename
         self.validate_date = validate_date
         self.tables = self.load_tables()
 
@@ -112,12 +112,25 @@ class CreateTable:
             if is_primary_key:
                 primary_keys.append(column_name)
             if is_foreign_key:
-                foreign_keys.append({
-                    "column": column_name,
-                    "references_table": references_table,
-                    "references_column": references_column,
-                })
+                try:
+                    reference = self.tables[references_table]["columns"][references_column]
+                    if reference["unique"] and reference["not_null"]:
+                        foreign_keys.append({
+                            "column": column_name,
+                            "references_table": references_table,
+                            "references_column": references_column
+                        })
+                        if "related_tables" not in self.tables[references_table]:
+                            self.tables[references_table]["related_tables"] = []
 
+                        self.tables[references_table]["related_tables"].append({
+                            "table": table_name,
+                            "column": column_name
+                        })
+                    else:
+                        return "Error: foreign key must be unique and not null."
+                except KeyError:
+                    return f"Error: non-existence entry '{references_column}'."
         if not primary_keys:
             return "Error: No PRIMARY KEY specified."
         if table_name in self.tables:

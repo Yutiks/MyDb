@@ -64,5 +64,119 @@
             }
         ],
         "data": []
+    },
+    "accounts": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": true,
+                "unique": true,
+                "default": null
+            },
+            "name": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "hobby": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [],
+        "data": [
+            {
+                "id": 100,
+                "name": "Alice",
+                "hobby": "reading"
+            },
+            {
+                "id": 102,
+                "name": "Bob",
+                "hobby": "cycling"
+            },
+            {
+                "id": 101,
+                "name": "Charlie",
+                "hobby": "gaming"
+            }
+        ],
+        "related_tables": [
+            {
+                "table": "employee",
+                "column": "account_id"
+            }
+        ]
+    },
+    "employee": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": true,
+                "unique": false,
+                "default": null
+            },
+            "age": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "salary": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "account_id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": true,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [
+            {
+                "column": "account_id",
+                "references_table": "accounts",
+                "references_column": "id"
+            }
+        ],
+        "data": [
+            {
+                "id": 1,
+                "age": 25,
+                "salary": 50000,
+                "account_id": 10
+            },
+            {
+                "id": 2,
+                "age": 30,
+                "salary": 60000,
+                "account_id": 102
+            },
+            {
+                "id": 3,
+                "age": 28,
+                "salary": 55000,
+                "account_id": 101
+            }
+        ]
     }
 }

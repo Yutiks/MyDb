@@ -6,12 +6,12 @@ from update import Update
 
 
 class MyDB:
-    def __init__(self):
-        self.create_table = CreateTable(self.validate_date)
-        self.insert_into = InsertInto(self.validate_date)
-        self.select_column = SelectColumn()
-        self.delete = Delete()
-        self.update = Update()
+    def __init__(self, filename="databases/db.json"):
+        self.create_table = CreateTable(self.validate_date, filename)
+        self.insert_into = InsertInto(self.validate_date, filename)
+        self.select_column = SelectColumn(filename)
+        self.delete = Delete(filename)
+        self.update = Update(filename)
 
     @staticmethod
     def validate_date(date_str):
@@ -24,39 +24,47 @@ class MyDB:
         year, month, day = int(year), int(month), int(day)
         return 1 <= month <= 12 and 1 <= day <= 31
 
+    def process_command(self, command):
+        if command == "exit":
+            return "exit"
+        elif command.startswith("INSERT INTO "):
+            return self.insert_into.insert_into(command)
+        elif command.startswith("CREATE TABLE "):
+            return self.create_table.create_table(command)
+        elif command.startswith("DELETE FROM "):
+            return self.delete.delete_from(command)
+        elif command.startswith("UPDATE "):
+            return self.update.update(command)
+        elif command.startswith("SELECT "):
+            result = self.select_column.select_column(command)
+            if isinstance(result, str):
+                return result
+            elif result:
+                output = []
+                for row in result:
+                    if isinstance(row, list):
+                        output.append(" ".join(map(str, row)))
+                    elif isinstance(row, dict):
+                        output.append(" ".join(map(str, row.values())))
+                return "\n".join(output)
+            else:
+                return "No data to display."
+        else:
+            return "Error: Unknown command."
 
-def main():
-    db = MyDB()
-
+    @staticmethod
     def multiline_command():
         cmd = input(">>> ")
         while not cmd.endswith(";") and cmd != "exit":
             cmd += f" {input('... ')}"
         return cmd
 
-    while True:
-        command = multiline_command().strip()
-        if command == "exit":
-            break
-        elif command.startswith("INSERT INTO "):
-            print(db.insert_into.insert_into(command))
-        elif command.startswith("CREATE TABLE "):
-            print(db.create_table.create_table(command))
-        elif command.startswith("DELETE FROM "):
-            print(db.delete.delete_from(command))
-        elif command.startswith("UPDATE "):
-            print(db.update.update(command))
-        elif command.startswith("SELECT "):
-            result = db.select_column.select_column(command)
-            if isinstance(result, str):
-                print(result)
-            elif result:
-                for row in result:
-                    print(*row.values())
-            else:
-                print("No data to display.")
-        else:
-            print("Error: Unknown command.")
+    def main(self):
+        while True:
+            command = self.multiline_command().strip()
+            result = self.process_command(command)
+            if result == "exit":
+                break
+            print(result)
 
-
-main()
+# main()

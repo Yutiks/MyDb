@@ -10,9 +10,17 @@ class Delete:
 
     def delete_from(self, command):
         command = command[len("DELETE FROM "):].rstrip(";").strip()
+        table_name = command.split()[0]
+        table_data = self.tables[table_name]["data"]
+
+        for i in self.tables:
+            for f in self.tables[i]["foreign_keys"]:
+                if "references_table" in f and f["references_table"] == table_name:
+                    return f"Error: table '{i}' reference on this table"
 
         if " WHERE " not in command:
-            return "Error: Condition is required. Use 'WHERE'."
+            self.tables[table_name]["data"] = []
+            return f"Deleted {len(table_data)} record(s) from table '{table_name}'."
 
         table_name, where_part = command.split(" WHERE ")
         table_name = table_name.strip()
@@ -20,7 +28,6 @@ class Delete:
         if table_name not in self.tables:
             return f"Table '{table_name}' does not exist."
 
-        table_data = self.tables[table_name]["data"]
         where_part = self.select.replace_subqueries(where_part)
         condition_func = self.select.check_condition(where_part)
 

@@ -166,6 +166,83 @@ class SelectColumn:
 
         return [row for row in table_data if matches_row(row)]
 
+    @staticmethod
+    def join(left_table_data, right_table_data, left_key, right_key, join_type, selected_columns, left_table_name,
+             right_table_name):
+        joined_data = []
+        left_columns = [f"{left_table_name}.{col}" for col in left_table_data[0].keys()]
+        right_columns = [f"{right_table_name}.{col}" for col in right_table_data[0].keys()]
+        all_columns = left_columns + right_columns
+
+        def filter_columns(row):
+            return [row[all_columns.index(col)] for col in selected_columns]
+
+        if join_type == 'inner':
+            for left_row in left_table_data:
+                for right_row in right_table_data:
+                    if left_row[left_key] == right_row[right_key]:
+                        merged_row = list(left_row.values()) + list(right_row.values())
+                        joined_data.append(filter_columns(merged_row))
+
+        elif join_type == 'left':
+            for left_row in left_table_data:
+                matched = False
+                for right_row in right_table_data:
+                    if left_row[left_key] == right_row[right_key]:
+                        merged_row = list(left_row.values()) + list(right_row.values())
+                        joined_data.append(filter_columns(merged_row))
+                        matched = True
+                if not matched:
+                    merged_row = list(left_row.values()) + [None] * len(right_columns)
+                    joined_data.append(filter_columns(merged_row))
+
+        elif join_type == 'right':
+            for right_row in right_table_data:
+                matched = False
+                for left_row in left_table_data:
+                    if left_row[left_key] == right_row[right_key]:
+                        merged_row = list(left_row.values()) + list(right_row.values())
+                        joined_data.append(filter_columns(merged_row))
+                        matched = True
+                if not matched:
+                    merged_row = [None] * len(left_columns) + list(right_row.values())
+                    joined_data.append(filter_columns(merged_row))
+
+        elif join_type == 'full':
+            matched_right = []
+            for left_row in left_table_data:
+                matched = False
+                for right_row in right_table_data:
+                    if left_row[left_key] == right_row[right_key]:
+                        merged_row = list(left_row.values()) + list(right_row.values())
+                        joined_data.append(filter_columns(merged_row))
+                        matched_right.append(right_row)
+                        matched = True
+                if not matched:
+                    merged_row = list(left_row.values()) + [None] * len(right_columns)
+                    joined_data.append(filter_columns(merged_row))
+            for right_row in right_table_data:
+                if right_row not in matched_right:
+                    merged_row = [None] * len(left_columns) + list(right_row.values())
+                    joined_data.append(filter_columns(merged_row))
+        return joined_data
+
+    @staticmethod
+    def cross_join(left_table_data, right_table_data, left_table_name, right_table_name, selected_columns):
+        result = []
+        left_columns = [f"{left_table_name}.{col}" for col in left_table_data[0].keys()]
+        right_columns = [f"{right_table_name}.{col}" for col in right_table_data[0].keys()]
+        all_columns = left_columns + right_columns
+
+        def filter_columns(row):
+            return [row[all_columns.index(col)] for col in selected_columns]
+
+        for row1 in left_table_data:
+            for row2 in right_table_data:
+                merged_row = list(row1.values()) + list(row2.values())
+                result.append(filter_columns(merged_row))
+        return result
+
     def select_column(self, command):
         where_part = None
         group_by_columns = None
@@ -183,6 +260,32 @@ class SelectColumn:
             order_desc = len(parts) > 1 and parts[1] == "DESC"
 
         columns_part, from_part = command.split(" FROM ", 1)
+
+        join_type = "inner"
+        join_table = None
+        join_condition = None
+
+        if " JOIN " in from_part:
+            if "LEFT" in from_part:
+                join_type = "left"
+                from_part, join_part = from_part.split(" LEFT JOIN ", 1)
+            elif "RIGHT" in from_part:
+                join_type = "right"
+                from_part, join_part = from_part.split(" RIGHT JOIN ", 1)
+            elif "FULL" in from_part:
+                join_type = "full"
+                from_part, join_part = from_part.split(" FULL JOIN ", 1)
+            elif "CROSS" in from_part:
+                join_type = "cross"
+                from_part, join_part = from_part.split(" CROSS JOIN ", 1)
+            else:
+                from_part, join_part = from_part.split(" JOIN ", 1)
+
+            join_table = join_part.strip()
+            if join_type != "cross":
+                join_table, join_condition = join_part.split(" ON ", 1)
+                join_table = join_table.strip()
+                join_condition = join_condition.strip()
 
         if " GROUP BY " in from_part:
             from_part, group_by_columns = from_part.split(" GROUP BY ", 1)
@@ -202,7 +305,31 @@ class SelectColumn:
         table_data = self.tables[table_name]["data"]
         table_columns = self.tables[table_name]["columns"]
 
-        columns = columns_part.split(", ") if " * " not in columns_part and columns_part != "*" else list(table_columns.keys())
+        if join_table:
+            if join_table not in self.tables:
+                return f"Error: Table '{join_table}' not found."
+
+            join_table_data = self.tables[join_table]["data"]
+            join_table_columns = self.tables[join_table]["columns"]
+            columns_left = columns_part.split(", ") if " * " not in columns_part and columns_part != "*" else [
+                f"{table_name}.{col}" for col in table_columns.keys()]
+            columns = columns_left
+            if " * " in columns_part or columns_part == "*":
+                columns_right = [f"{join_table}.{col}" for col in join_table_columns.keys()]
+                columns += columns_right
+            if join_type == 'cross':
+                joined_data = self.cross_join(table_data, join_table_data, table_name, join_table, columns)
+                return joined_data
+            else:
+                left_key, right_key = join_condition.split("=")
+                left_key = left_key.strip()
+                right_key = right_key.strip()
+                table_data = self.join(table_data, join_table_data, left_key, right_key, join_type, columns, table_name,
+                                       join_table)
+                return table_data
+
+        columns = columns_part.split(", ") if " * " not in columns_part and columns_part != "*" else list(
+            table_columns.keys())
         if group_by_columns:
             for group_by_column in group_by_columns:
                 if group_by_column not in table_columns:
@@ -214,6 +341,7 @@ class SelectColumn:
 
         if order_by_column and order_by_column not in table_columns:
             return f"Error: Column '{order_by_column}' not found."
+
         if where_part:
             table_data = self.where_conditions(where_part, table_data)
         if order_by_column:
