@@ -85,10 +85,17 @@ def start_server():
     server_sock.bind((HOST, PORT))
     server_sock.listen()
     print(f"[SERVER] working host {HOST} port: {PORT}")
-    while True:
-        client_sock, client_addr = server_sock.accept()
-        thread = threading.Thread(target=handle_client, args=(client_sock, client_addr))
-        thread.start()
+    try:
+        while True:
+            client_sock, client_addr = server_sock.accept()
+            thread = threading.Thread(target=handle_client, args=(client_sock, client_addr))
+            thread.start()
+    except Exception as e:
+        print(f"[SERVER] Error with {HOST, PORT}: {e}")
+    finally:
+        server_sock.close()
+        client_sock.close()
+        print(f"[SERVER] Connection {HOST, PORT} closed.")
 
 
 start_server()
