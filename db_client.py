@@ -1,6 +1,6 @@
 import socket
 from messaging_protocol import sendtext, recieve
-from main import MyDB
+from main import multiline_command
 
 HOST = "62.60.186.238"
 PORT = 5089
@@ -27,11 +27,8 @@ def main():
     user_id = msg[1].strip()
     print(f"[CLIENT] Your user ID is {user_id}")
 
-    db_path = f"databases/db_{user_id}.json"
-    db = MyDB(db_path)
-
     while True:
-        query = db.multiline_command().strip()
+        query = multiline_command().strip()
         if query == "exit":
             sendtext(sock, "exit")
             break

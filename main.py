@@ -5,6 +5,13 @@ from select_column import SelectColumn
 from update import Update
 
 
+def multiline_command():
+    cmd = input(">>> ")
+    while not cmd.endswith(";") and cmd != "exit":
+        cmd += f" {input('... ')}"
+    return cmd
+
+
 class MyDB:
     def __init__(self, filename="databases/db.json"):
         self.create_table = CreateTable(self.validate_date, filename)
@@ -52,16 +59,9 @@ class MyDB:
         else:
             return "Error: Unknown command."
 
-    @staticmethod
-    def multiline_command():
-        cmd = input(">>> ")
-        while not cmd.endswith(";") and cmd != "exit":
-            cmd += f" {input('... ')}"
-        return cmd
-
     def main(self):
         while True:
-            command = self.multiline_command().strip()
+            command = multiline_command().strip()
             result = self.process_command(command)
             if result == "exit":
                 break
