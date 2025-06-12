@@ -2,7 +2,7 @@ import socket
 from messaging_protocol import sendtext, recieve
 from main import MyDB
 
-HOST = '127.0.0.1'
+HOST = "62.60.186.238"
 PORT = 5089
 
 
