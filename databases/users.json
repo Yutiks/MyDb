@@ -1,3 +1,36 @@
 {
-    "Dima": "8960"
+    "yusuf": {
+        "uid": "1234",
+        "databases": [
+            "default"
+        ]
+    },
+    "Pet": {
+        "uid": "1794",
+        "databases": [
+            "default",
+            "users"
+        ]
+    },
+    "fake": {
+        "uid": "7059",
+        "databases": [
+            "default",
+            "users"
+        ]
+    },
+    "Sas": {
+        "uid": "5271",
+        "databases": [
+            "default",
+            "users"
+        ]
+    },
+    "sas": {
+        "uid": "1246",
+        "databases": [
+            "default",
+            "users"
+        ]
+    }
 }

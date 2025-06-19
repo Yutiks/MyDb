@@ -20,7 +20,7 @@ def save_users():
 
 
 def generate_unique_id():
-    existing = set(users.values())
+    existing = {info["uid"] for info in users.values()}
     while True:
         uid = str(random.randint(1000, 9999))
         if uid not in existing:
@@ -40,19 +40,31 @@ def handle_client(clt_sock, address):
             print(f"[SERVER] Received username: {username!r}")
 
             if username in users:
-                uid = users[username]
+                uid = users[username]["uid"]
+                db_list = users[username]["databases"]
                 print(f"[SERVER] Existing user '{username}', ID={uid}")
             else:
                 uid = generate_unique_id()
-                users[username] = uid
+                users[username] = {"uid": uid, "databases": ["default"]}
+                db_list = users[username]["databases"]
                 save_users()
                 print(f"[SERVER] New user '{username}' registered with ID={uid}")
 
-            db_path = f"databases/db_{uid}.json"
+            sendtext(clt_sock, f"Your databases: {', '.join(db_list)}\nEnter DB name (existing or new):")
+            msg = recieve(clt_sock)
+            if not msg or msg[0] != "TXT":
+                return
+
+            db_name = msg[1].strip()
+            if db_name not in db_list:
+                db_list.append(db_name)
+                save_users()
+
+            db_path = f"databases/{uid}_{db_name}.json"
             if not os.path.exists(db_path):
                 with open(db_path, 'w', encoding='utf-8') as file_:
                     json.dump({}, file_, ensure_ascii=False, indent=2)
-                print(f"[SERVER] Created empty DB file: {db_path}")
+                print(f"[SERVER] Created DB file: {db_path}")
 
             db = MyDB(db_path)
             sendtext(clt_sock, uid)
@@ -72,6 +84,8 @@ def handle_client(clt_sock, address):
                     print(f"[SERVER] {username} ({uid}) requested exit")
                     break
                 response = db.process_command(query)
+                if not isinstance(response, str):
+                    response = str(response)
                 sendtext(clt_sock, response)
         except Exception as e:
             print(f"[SERVER] Error with {address}: {e}")
@@ -94,8 +108,7 @@ def start_server():
         print(f"[SERVER] Error with {HOST, PORT}: {e}")
     finally:
         server_sock.close()
-        client_sock.close()
-        print(f"[SERVER] Connection {HOST, PORT} closed.")
+        print(f"[SERVER] Server on {HOST}:{PORT} closed.")
 
 
 start_server()
