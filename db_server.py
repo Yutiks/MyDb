@@ -6,7 +6,7 @@ import random
 from main import MyDB
 from messaging_protocol import recieve, sendtext
 
-HOST = "127.0.0.1"
+HOST = "62.60.186.238"
 PORT = 5076
 USERS_FILE = "databases/users.json"
 
