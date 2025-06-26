@@ -1,0 +1,138 @@
+{
+    "messages": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "message": {
+                "type": "VARCHAR",
+                "max_length": 700,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "date": {
+                "type": "DATE",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [],
+        "data": [],
+        "related_tables": [
+            {
+                "table": "messaging_history",
+                "column": "message_id"
+            }
+        ]
+    },
+    "users": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "name": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": true,
+                "default": null
+            },
+            "password": {
+                "type": "VARCHAR",
+                "max_length": 50,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [],
+        "data": [],
+        "related_tables": [
+            {
+                "table": "messaging_history",
+                "column": "sender_id"
+            },
+            {
+                "table": "messaging_history",
+                "column": "receiver_id"
+            }
+        ]
+    },
+    "messaging_history": {
+        "columns": {
+            "id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            },
+            "sender_id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": true,
+                "unique": true,
+                "default": null
+            },
+            "receiver_id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": true,
+                "unique": true,
+                "default": null
+            },
+            "message_id": {
+                "type": "INT",
+                "max_length": null,
+                "not_null": true,
+                "unique": true,
+                "default": null
+            },
+            "status": {
+                "type": "VARCHAR",
+                "max_length": 20,
+                "not_null": false,
+                "unique": false,
+                "default": null
+            }
+        },
+        "primary_keys": [
+            "id"
+        ],
+        "foreign_keys": [
+            {
+                "column": "sender_id",
+                "references_table": "users",
+                "references_column": "id"
+            },
+            {
+                "column": "receiver_id",
+                "references_table": "users",
+                "references_column": "id"
+            },
+            {
+                "column": "message_id",
+                "references_table": "messages",
+                "references_column": "id"
+            }
+        ],
+        "data": []
+    }
+}

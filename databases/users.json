@@ -32,5 +32,12 @@
             "default",
             "users"
         ]
+    },
+    "Admin1": {
+        "uid": "2623",
+        "databases": [
+            "default",
+            "messanger"
+        ]
     }
 }

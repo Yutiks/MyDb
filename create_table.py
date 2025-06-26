@@ -113,24 +113,27 @@ class CreateTable:
                 primary_keys.append(column_name)
             if is_foreign_key:
                 try:
-                    reference = self.tables[references_table]["columns"][references_column]
-                    if reference["unique"] and reference["not_null"]:
+                    parent_table = self.tables[references_table]
+                    parent_columns = parent_table["columns"]
+                    is_primary = references_column in parent_table["primary_keys"]
+                    is_unique = parent_columns.get(references_column, {}).get("unique", False)
+                    if is_primary or is_unique:
                         foreign_keys.append({
                             "column": column_name,
                             "references_table": references_table,
                             "references_column": references_column
                         })
-                        if "related_tables" not in self.tables[references_table]:
-                            self.tables[references_table]["related_tables"] = []
-
-                        self.tables[references_table]["related_tables"].append({
+                        if "related_tables" not in parent_table:
+                            parent_table["related_tables"] = []
+                        parent_table["related_tables"].append({
                             "table": table_name,
                             "column": column_name
                         })
                     else:
-                        return "Error: foreign key must be unique and not null."
+                        return f"Error: Cannot reference column '{references_column}' in table '{references_table}' — it must be PRIMARY KEY or UNIQUE."
+
                 except KeyError:
-                    return f"Error: non-existence entry '{references_column}'."
+                    return f"Error: Table '{references_table}' or column '{references_column}' does not exist."
         if not primary_keys:
             return "Error: No PRIMARY KEY specified."
         if table_name in self.tables:

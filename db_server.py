@@ -6,8 +6,8 @@ import random
 from main import MyDB
 from messaging_protocol import recieve, sendtext
 
-HOST = "0.0.0.0"
-PORT = 5089
+HOST = "127.0.0.1"
+PORT = 5076
 USERS_FILE = "databases/users.json"
 
 with open(USERS_FILE, 'r', encoding='utf-8') as f:
@@ -87,8 +87,8 @@ def handle_client(clt_sock, address):
                 if not isinstance(response, str):
                     response = str(response)
                 sendtext(clt_sock, response)
-        except Exception as e:
-            print(f"[SERVER] Error with {address}: {e}")
+        # except Exception as e:
+        #     print(f"[SERVER] Error with {address}: {e}")
         finally:
             clt_sock.close()
             print(f"[SERVER] Connection {address} closed.")
